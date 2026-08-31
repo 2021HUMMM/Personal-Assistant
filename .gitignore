@@ -1,0 +1,32 @@
+# Virtualenv - 742 MB, dibangun ulang dengan ./install.sh
+venv/
+files/venv/
+
+# Venv Chatterbox (6.3 GB, torch+cuda) - terpisah dari venv utama karena
+# chatterbox-tts butuh numpy<2.0. Dibangun ulang dengan install-chatterbox.sh
+files/venv-chatterbox/
+
+# Bobot model Chatterbox-TTS-Indonesian (5 GB) - diunduh terpisah.
+files/models/
+
+__pycache__/
+*.py[cod]
+
+# Unit systemd yang di-generate (path-nya khusus mesin ini).
+# Template-nya yang di-commit: jarvis.service.template
+jarvis.service
+
+# Model suara diunduh terpisah, terlalu besar untuk repo.
+*.onnx
+*.onnx.json
+
+# Rekaman & keluaran sementara
+*.wav
+
+# Sampah dari sesi terminal (nyasar kalau pernah buka octave di direktori ini).
+octave-workspace
+
+# Riwayat percakapan - isinya apa pun yang kamu ucapkan ke Jarvis, jadi
+# sifatnya pribadi dan menumpuk terus. Hapus baris ini kalau memang mau
+# ikut ter-commit.
+files/percakapan/

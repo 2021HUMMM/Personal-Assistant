@@ -1,0 +1,48 @@
+[Unit]
+Description=Jarvis - asisten suara lokal
+# Butuh sesi grafis supaya bisa mengakses mikrofon dan speaker.
+After=graphical-session.target sound.target
+PartOf=graphical-session.target
+# Kalau gagal terus, berhenti mencoba daripada menghabiskan CPU.
+StartLimitBurst=5
+StartLimitIntervalSec=120
+
+[Service]
+Type=simple
+WorkingDirectory=__DIR__
+# `After=graphical-session.target` cuma menjamin URUTAN, bukan bahwa DISPLAY
+# sudah benar-benar terdaftar di systemd user manager saat itu juga - beda
+# hal. Kejadian nyata: tepat 28 detik setelah boot, "buka chrome"/"buka vs
+# code" lewat suara kedengar dan cocok dengan benar, Jarvis bilang "Sip,
+# bentar" (proses berhasil di-spawn), tapi jendelanya tidak pernah muncul -
+# systemd-run --scope yang dipakai commands._luncurkan() mewarisi environment
+# dari systemd USER MANAGER, dan kalau DISPLAY belum kepasang di situ, GUI
+# yang dibuka tidak tahu mau nongol ke mana. Gerbang ini menahan start sampai
+# `systemctl --user show-environment` benar-benar melaporkan DISPLAY - jadi
+# telat beberapa detik itu lebih baik daripada nyala tapi "buka apa aja gagal
+# diam-diam". Timeout 30 detik supaya tidak nyangkut selamanya kalau memang
+# tidak ada sesi grafis (mis. dipanggil dari SSH murni).
+ExecStartPre=/usr/bin/timeout 30 /bin/sh -c 'until systemctl --user show-environment | grep -q "^DISPLAY="; do sleep 0.5; done'
+ExecStart=__PYTHON__ -u main.py
+# systemd user service tidak membaca ~/.bashrc, jadi PATH harus disebut sendiri.
+Environment=PATH=__PATH__
+Environment=PYTHONUNBUFFERED=1
+# Ambil variabel rahasia dari file terpisah kalau ada (API key, dsb).
+EnvironmentFile=-%h/.jarvis/env
+Restart=on-failure
+RestartSec=5
+
+# Jarvis mematikan subprocess-nya sendiri lewat atexit (lihat _bersihkan di
+# main.py). Dua setelan di bawah ini jaring pengaman kalau itu gagal:
+#
+# TimeoutStopSec - default systemd 90 detik. Pernah kejadian: proses
+# Chatterbox tertinggal hidup, systemd menunggu 90 detik, lalu menandai
+# service 'Failed with result timeout' - dan karena Restart=on-failure,
+# Jarvis menyala lagi sendiri padahal baru saja disuruh "keluar". 15 detik
+# cukup untuk berhenti wajar, dan bikin masalah semacam itu cepat kelihatan.
+TimeoutStopSec=15
+# Pastikan SEMUA sisa proses di cgroup ikut dimatikan, bukan cuma yang utama.
+KillMode=control-group
+
+[Install]
+WantedBy=default.target

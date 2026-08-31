@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Shim supaya Claude Code bisa memanggil `jarvis-do` tanpa tahu soal venv.
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec "$DIR/venv/bin/python" "$DIR/jarvis_do.py" "$@"
