@@ -100,6 +100,7 @@ WEB_ALIASES = {
     "github": "https://github.com",
     "chatgpt": "https://chatgpt.com",
     "chat gpt": "https://chatgpt.com",
+    "google chat": "https://chat.google.com",
 }
 
 # Kata kerja pembuka. Yang tersisa setelah kata ini dianggap nama aplikasi.
@@ -263,6 +264,21 @@ def _gtk_launch_terverifikasi(desktop_id: str) -> bool:
     except (subprocess.TimeoutExpired, OSError):
         return False
     return hasil.returncode == 0
+
+
+def buka_website(url: str) -> str:
+    """
+    Buka `url` di browser default lewat xdg-open. Satu-satunya tempat logika
+    ini ditulis - dipanggil baik dari jarvis-do (provider claudecode, lewat
+    Bash) maupun tools.py (provider gemini, lewat tool-calling native),
+    supaya tidak ada dua salinan yang bisa beda perilaku.
+    """
+    if not re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*://", url):
+        url = f"https://{url}"
+    if not shutil.which("xdg-open"):
+        return "Tidak bisa membuka website - xdg-open tidak ada di sistem ini."
+    _luncurkan(["xdg-open", url])
+    return f"Membuka {url}."
 
 
 def _luncurkan(command):

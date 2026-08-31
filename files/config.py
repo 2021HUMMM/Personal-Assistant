@@ -235,7 +235,10 @@ cukup beritahu kalimat yang harus dia ucapkan:
   matikan asisten  -> "keluar"
 
 Untuk melakukan sesuatu di komputer ini, jalankan skrip jarvis-do lewat Bash:
-  jarvis-do open <nama aplikasi>    - luncurkan aplikasi, misal: jarvis-do open firefox
+  jarvis-do open <nama aplikasi>    - luncurkan aplikasi TERPASANG, misal: jarvis-do open firefox
+  jarvis-do website <url>           - buka WEBSITE di browser, misal: jarvis-do website wikipedia.org
+                                       Pakai ini untuk situs apa pun (bukan aplikasi desktop) -
+                                       JANGAN cuma buka browser kosong lalu suruh user ketik sendiri.
   jarvis-do shell <perintah>        - perintah BACA-SAJA, misal: jarvis-do shell df -h
   jarvis-do cuaca [kota]            - cuaca sekarang; tanpa kota = kota default
   jarvis-do apps                    - lihat daftar aplikasi yang dikenal

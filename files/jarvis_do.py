@@ -8,6 +8,7 @@ sini memakai daftar putih yang sama dengan tools.py.
 
 Dipanggil Claude Code sebagai:
     jarvis-do open <nama aplikasi>
+    jarvis-do website <url>
     jarvis-do shell <perintah baca-saja>
     jarvis-do cuaca [kota]
     jarvis-do apps
@@ -37,7 +38,7 @@ class _NullCtx:
 
 def main(argv):
     if len(argv) < 2:
-        print("pakai: jarvis-do open|shell|apps [argumen]")
+        print("pakai: jarvis-do open|website|shell|apps [argumen]")
         return 2
 
     aksi, sisa = argv[1], argv[2:]
@@ -52,6 +53,11 @@ def main(argv):
                         "Coba 'jarvis-do apps' untuk lihat yang terdaftar, "
                         "atau sebutkan nama binary-nya yang persis.")
         print(hasil)
+
+    elif aksi == "website":
+        if not sisa:
+            return _err("butuh alamat website")
+        print(commands.buka_website(" ".join(sisa)))
 
     elif aksi == "shell":
         if not sisa:
@@ -79,7 +85,7 @@ def main(argv):
 
     else:
         return _err(f"aksi '{aksi}' tidak dikenal. "
-                    "Yang ada: open, shell, cuaca, apps")
+                    "Yang ada: open, website, shell, cuaca, apps")
 
     return 0
 

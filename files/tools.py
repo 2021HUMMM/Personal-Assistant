@@ -10,9 +10,7 @@ Jadi tulis yang jelas - itu satu-satunya petunjuk yang dia punya soal kapan
 tool ini dipakai dan apa isi argumennya.
 """
 
-import re
 import shlex
-import shutil
 import subprocess
 
 import commands
@@ -49,7 +47,16 @@ def buat_tools(ctx):
                 'vs code', 'discord'. Tidak perlu nama binary yang persis -
                 akan dicocokkan otomatis.
         """
-        return commands.open_app(ctx, nama)
+        hasil = commands.open_app(ctx, nama)
+        if hasil is not None:
+            return hasil
+        # Kejadian nyata: fungsi ini mengembalikan None kalau bukan aplikasi
+        # terpasang, dan tanpa pesan sejelas ini, model sempat menyerah lalu
+        # asal buka browser kosong ("buka wikipedia" -> Firefox tanpa alamat)
+        # alih-alih mencoba buka_website dengan URL yang benar.
+        return (f"'{nama}' bukan aplikasi yang terpasang di komputer ini. "
+                f"Kalau ini nama website (bukan aplikasi desktop), panggil "
+                f"buka_website dengan URL-nya - JANGAN cuma buka browser kosong.")
 
     def buka_website(url: str) -> str:
         """Buka alamat website tertentu di browser default pengguna.
@@ -64,12 +71,7 @@ def buat_tools(ctx):
             url: Alamat website. Boleh tanpa skema (mis. 'wikipedia.org') -
                 akan ditambahkan https:// otomatis kalau belum ada.
         """
-        if not re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*://", url):
-            url = f"https://{url}"
-        if not shutil.which("xdg-open"):
-            return "Tidak bisa membuka website - xdg-open tidak ada di sistem ini."
-        commands._luncurkan(["xdg-open", url])
-        return f"Membuka {url}."
+        return commands.buka_website(url)
 
     def jalankan_perintah(perintah: str) -> str:
         """Jalankan perintah shell yang HANYA MEMBACA, lalu kembalikan keluarannya.
