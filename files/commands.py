@@ -79,6 +79,27 @@ PROJECT_EDITOR = "code"  # binary yang dipakai membuka semua PROJECT_ALIASES
 # tidak pernah mengganggu jendela yang sedang dipakai.
 PROJECT_FLAGS = ["-n"]
 
+# Website yang bukan aplikasi terpasang, jadi tidak akan pernah ketemu lewat
+# aplikasi.cari() atau APP_ALIASES apa pun - "buka youtube"/"buka email" itu
+# maksudnya buka BROWSER ke alamat tertentu, bukan mencari binary bernama
+# "youtube". Dibuka lewat xdg-open (pembuka URL bawaan sistem, pakai browser
+# default) - ini juga kenapa tool LLM `buka_website` di tools.py ada, buat
+# alamat apa pun yang tidak masuk daftar kurasi kecil ini.
+WEB_ALIASES = {
+    "youtube": "https://youtube.com",
+    "email": "https://mail.google.com",
+    "gmail": "https://mail.google.com",
+    "maps": "https://maps.google.com",
+    "google maps": "https://maps.google.com",
+    "whatsapp": "https://web.whatsapp.com",
+    "whatsapp web": "https://web.whatsapp.com",
+    "drive": "https://drive.google.com",
+    "google drive": "https://drive.google.com",
+    "kalender": "https://calendar.google.com",
+    "calendar": "https://calendar.google.com",
+    "github": "https://github.com",
+}
+
 # Kata kerja pembuka. Yang tersisa setelah kata ini dianggap nama aplikasi.
 _OPEN_TRIGGERS = (
     "bukakan", "bukain", "buka", "jalankan", "jalanin", "nyalain",
@@ -254,11 +275,17 @@ def _resolve_app(spoken_name: str):
       2. PROJECT_ALIASES - daftar KECIL yang sengaja kamu kurasi sendiri buat
          buka folder proyek ("buka project jarvis" -> `code ~/Documents/jarvis`).
          Dicek SEBELUM aplikasi.cari() - lihat alasan di bawah.
-      3. aplikasi.cari() - baca LANGSUNG dari sistem: semua .desktop yang
+      3. WEB_ALIASES - sama-sama daftar kurasi eksplisit, tapi buat WEBSITE
+         ("buka youtube" -> browser ke youtube.com). Ini TIDAK PERNAH bisa
+         ketemu lewat aplikasi.cari() (bukan aplikasi terpasang) atau
+         APP_ALIASES (bukan nama binary), jadi urutannya di sini tidak
+         sebentrok PROJECT_ALIASES - tetap dicek di tingkat yang sama biar
+         konsisten sebagai "kurasi eksplisit".
+      4. aplikasi.cari() - baca LANGSUNG dari sistem: semua .desktop yang
          terpasang, plus game Steam lewat libraryfolders.vdf.
-      4. APP_ALIASES yang fuzzy - jaring pengaman buat salah dengar ringan
+      5. APP_ALIASES yang fuzzy - jaring pengaman buat salah dengar ringan
          dari alias yang memang terdaftar ("vs kod" -> "vs code").
-      5. Tebakan terakhir: nama mentahnya sebagai binary. Cukup sering
+      6. Tebakan terakhir: nama mentahnya sebagai binary. Cukup sering
          berhasil untuk aplikasi command-line sederhana.
 
     Dua kejadian nyata yang bentrok dan kenapa urutannya begini:
@@ -281,6 +308,10 @@ def _resolve_app(spoken_name: str):
     key_proyek, skor_proyek = _cocokkan_dict(spoken_name, PROJECT_ALIASES)
     if skor_proyek >= 0.72:
         return [PROJECT_EDITOR, *PROJECT_FLAGS, PROJECT_ALIASES[key_proyek]], key_proyek
+
+    key_web, skor_web = _cocokkan_dict(spoken_name, WEB_ALIASES)
+    if skor_web >= 0.72:
+        return ["xdg-open", WEB_ALIASES[key_web]], key_web
 
     ditemukan = aplikasi.cari(spoken_name)
     if ditemukan is not None:

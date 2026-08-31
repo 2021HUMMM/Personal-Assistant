@@ -514,14 +514,38 @@ karena hasilnya butuh **argumen** (path folder), bukan cuma nama binary:
 
 ```python
 PROJECT_ALIASES = {
-    "project jarvis": os.path.expanduser("~/Documents/jarvis"),
-    "jarvis": os.path.expanduser("~/Documents/jarvis"),
+    "project jarvis": os.path.expanduser("~/Documents/jarvis/files"),
+    "jarvis": os.path.expanduser("~/Documents/jarvis/files"),
 }
 PROJECT_EDITOR = "code"
+PROJECT_FLAGS = ["-n"]  # paksa window BARU, jangan pakai ulang yang aktif
 ```
 
-"buka project jarvis" → `code /home/kamu/Documents/jarvis`. Tambah proyek
-lain: satu baris.
+"buka project jarvis" → `code -n /home/kamu/Documents/jarvis/files`. Tambah
+proyek lain: satu baris. Arahkan ke folder WORKSPACE yang persis kamu pakai
+(bukan folder induknya) — VS Code (dan riwayat sesi Claude Code-nya)
+menyimpan itu per folder persis, folder induk vs subfolder dianggap dua
+workspace berbeda.
+
+### Membuka website
+
+`WEB_ALIASES` di [commands.py](commands.py) — untuk situs yang bukan
+aplikasi terpasang ("buka youtube", "buka email"), jadi tidak akan pernah
+ketemu lewat pencarian aplikasi biasa:
+
+```python
+WEB_ALIASES = {
+    "youtube": "https://youtube.com",
+    "email": "https://mail.google.com",
+    "gmail": "https://mail.google.com",
+    # ...
+}
+```
+
+Dibuka lewat `xdg-open` (browser default sistem). Untuk situs di luar
+daftar ini, LLM punya tool `buka_website(url)` sendiri (lihat
+[tools.py](tools.py)) yang bisa buka alamat APA PUN yang kamu sebut, bukan
+cuma yang dikurasi.
 
 **Soal kata "jarvis" sebagai isi kalimat, bukan sapaan** — ini butuh
 perhatian khusus karena "jarvis" biasanya dibuang sebagai kata sapaan

@@ -197,6 +197,11 @@ def _check_resolve_app() -> int:
             # seperti biasa - regresi yang harus tetap dijaga.
             ("browser", "browser"),
             ("peramban", "peramban"),
+            # Website (WEB_ALIASES) - bukan aplikasi terpasang, jadi harus
+            # ketemu lewat kurasi ini, bukan mentok jadi tebakan binary.
+            ("youtube", "youtube"),
+            ("email", "email"),
+            ("gmail", "gmail"),
         ]
         for arg, label_diharap in kasus:
             _cmd, label = commands._resolve_app(arg)
@@ -239,7 +244,7 @@ def run() -> int:
     failures += _check_responses()
     failures += _check_resolve_app()
 
-    total = len(INTENT_CASES) + len(SHUTDOWN_CASES) + 1 + 4
+    total = len(INTENT_CASES) + len(SHUTDOWN_CASES) + 1 + 7
     print(f"\n{total - failures}/{total} lolos")
     return 1 if failures else 0
 
