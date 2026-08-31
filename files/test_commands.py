@@ -54,6 +54,11 @@ INTENT_CASES = [
     # Tapi tetap tersapa dengan benar di frasa perpisahan/sesi.
     ("sampai jumpa jarvis",       "stop_sesi", None),
     ("stop jarvis",               "stop_sesi", None),
+    # Whisper sering salah dengar "jarvis" (nama buatan) - kejadian nyata,
+    # dua kali. Perbandingan kata terakhir FUZZY, bukan persis, biar tetap
+    # kena stop_sesi walau salah dengar begini.
+    ("stop dervis",               "stop_sesi", None),
+    ("stop jarakis",              "stop_sesi", None),
     ("matikan jarvis",            "quit",      None),
     # "main"/"mainin" khusus buat game - lebih natural daripada "buka".
     ("main cyberpunk",            "open_app",  "cyberpunk"),

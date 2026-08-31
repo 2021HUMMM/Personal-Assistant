@@ -154,7 +154,12 @@ CHATTERBOX_PYTHON = os.environ.get(
 CHATTERBOX_MODEL_DIR = os.environ.get(
     "JV_CHATTERBOX_MODEL_DIR", os.path.join(_JARVIS_DIR, "models", "chatterbox-id"))
 CHATTERBOX_STARTUP_TIMEOUT = 60   # detik - muat model ke GPU + siapkan voice conditioning
-CHATTERBOX_TIMEOUT = 15           # detik - batas satu kali sintesis
+CHATTERBOX_TIMEOUT = 25           # detik - batas satu kali sintesis. Dinaikkan dari 15:
+                                   # sejak Whisper juga pindah ke GPU (medium/cuda), GPU
+                                   # sama-sama dipakai dua proses - jawaban panjang dari
+                                   # LLM kadang butuh lebih dari 15s buat disintesis
+                                   # Chatterbox. Kejadian nyata di log: timeout pas
+                                   # respons ~350 karakter, jatuh ke Piper sekali itu saja.
 
 # --- Keamanan shutdown ---
 # Salah dengar yang berujung komputer mati itu fatal. Dua lapis pengaman:

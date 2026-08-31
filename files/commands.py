@@ -528,8 +528,15 @@ def match(text: str):
     # jarvis") itu menyapa, bukan bagian dari maksudnya - beda kasus dari
     # "buka project jarvis" di bawah, di mana "jarvis" memang isi/argumennya.
     # Makanya cuma dilepas di sini, secara lokal, bukan di normalize().
+    #
+    # Kata terakhir dibandingkan FUZZY ke "jarvis" (bukan persis) - kejadian
+    # nyata (dua kali): "stop jarvis" ke-transkrip Whisper jadi "stop
+    # jarakis" dan "stop dervis" ("Jarvis" itu nama buatan, gampang salah
+    # dengar). Perbandingan persis bikin dua-duanya lolos ke LLM, yang tidak
+    # punya cara benerin sesi (cuma bisa saran "keluar", padahal itu MATIKAN
+    # program, beda jauh dari maksud "stop jarvis" yang cuma nutup sesi).
     norm_tanpa_sapaan_ekor = norm
-    if words and words[-1] == "jarvis":
+    if words and _similar(words[-1], "jarvis") >= 0.6:
         norm_tanpa_sapaan_ekor = " ".join(words[:-1])
     if (norm in _STOP_SESI_PHRASES or norm_tanpa_sapaan_ekor in _STOP_SESI_PHRASES
             or _contains_any(norm, ("stop jarvis", "udah cukup"))):
