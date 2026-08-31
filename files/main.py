@@ -209,9 +209,15 @@ def jalankan_sesi(listener, ctx, otak, riwayat=None) -> bool:
         # dikirim ke whisper sebagai "ucapan".
         listener.drain()
 
-        text = speech_to_text.transcribe(
-            listener.record_command(maks_tunggu_bicara=config.SESI_HENING_TIMEOUT)
-        )
+        audio_rekam = listener.record_command(maks_tunggu_bicara=config.SESI_HENING_TIMEOUT)
+        # Durasi rekam BENERAN (bukan cuma selisih timestamp log, yang ikut
+        # kehitung waktu transkripsi whisper) - bukti buat lacak "kepotong":
+        # mentok di COMMAND_MAX_SECONDS (batas keras total), atau berhenti
+        # duluan karena SILENCE_SECONDS/SILENCE_THRESHOLD mendeteksi hening.
+        detik_rekam = len(audio_rekam) / config.SAMPLE_RATE
+        print(f"[rec] durasi {detik_rekam:.2f}s"
+              f" (batas keras {config.COMMAND_MAX_SECONDS}s)")
+        text = speech_to_text.transcribe(audio_rekam)
 
         if not text:
             print(f"[sesi] {config.SESI_HENING_TIMEOUT}s tanpa suara - balik ke mode "
