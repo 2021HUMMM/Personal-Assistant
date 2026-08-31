@@ -44,8 +44,12 @@ CHANNELS = 1
 FRAME_MS = 80                # openWakeWord minta chunk ~80ms di 16kHz
 PREROLL_MS = 240             # audio sebelum wake word terdeteksi yang ikut direkam,
                              # biar suku kata pertama perintahmu tidak kepotong
-COMMAND_MAX_SECONDS = 6      # batas panjang satu perintah
-SILENCE_SECONDS = 0.9        # berhenti merekam setelah hening selama ini
+COMMAND_MAX_SECONDS = 15     # batas panjang satu perintah - dinaikkan dari 6 seiring
+                             # SILENCE_SECONDS, supaya kalimat + jeda toleransi di
+                             # bawah tidak kepotong batas keras ini duluan
+SILENCE_SECONDS = 3.0        # berhenti merekam setelah hening selama ini - dinaikkan
+                             # dari 0.9 karena jeda mikir/napas natural sering
+                             # kesalah-anggap "sudah selesai ngomong"
 SILENCE_THRESHOLD = 500      # RMS di bawah ini dianggap hening (sesuaikan dengan mic-mu)
 
 # --- Interupsi (barge-in) ---
