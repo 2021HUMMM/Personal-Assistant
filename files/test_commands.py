@@ -220,6 +220,53 @@ def _check_resolve_app() -> int:
     return failures
 
 
+def _check_gtk_launch_verifikasi() -> int:
+    """
+    open_app() lewat fallback gtk-launch HARUS ngaku gagal (return None) kalau
+    gtk-launch beneran gagal - kejadian nyata: "buka chatgpt" dijawab "Oke"
+    padahal gtk-launch diam-diam exit 2 ("no such application"), dan karena
+    open_app() mengaku berhasil, LLM (satu-satunya yang punya tool
+    buka_website buat alamat sembarang) tidak pernah kepanggil sama sekali.
+
+    subprocess.run DIGANTI TIRUAN - tidak bergantung .desktop apa pun beneran
+    ada/tidak ada di mesin yang menjalankan tes ini.
+    """
+    failures = 0
+    asli_run = commands.subprocess.run
+    asli_which = commands.shutil.which
+
+    class _HasilTiruan:
+        def __init__(self, returncode):
+            self.returncode = returncode
+
+    def which_tiruan(nama):
+        # gtk-launch "ada", tapi binary mentahnya tidak - biar jatuh ke fallback ini.
+        return "/usr/bin/gtk-launch" if nama == "gtk-launch" else None
+
+    class _FakeCtx:
+        def speak(self, _t): pass
+        def listen(self, _s): return ""
+
+    commands.shutil.which = which_tiruan
+    try:
+        commands.subprocess.run = lambda *a, **k: _HasilTiruan(2)  # gagal
+        r = commands.open_app(_FakeCtx(), "aplikasi-yang-gaada-banget")
+        ok = r is None
+        failures += not ok
+        print(f"{'ok  ' if ok else 'GAGAL'} gtk-launch gagal -> open_app() = {r!r} (harus None)")
+
+        commands.subprocess.run = lambda *a, **k: _HasilTiruan(0)  # berhasil
+        r = commands.open_app(_FakeCtx(), "aplikasi-yang-ada")
+        ok = r is not None
+        failures += not ok
+        print(f"{'ok  ' if ok else 'GAGAL'} gtk-launch berhasil -> open_app() = {r!r} (harus ada respons)")
+    finally:
+        commands.subprocess.run = asli_run
+        commands.shutil.which = asli_which
+
+    return failures
+
+
 def run() -> int:
     failures = 0
 
@@ -248,8 +295,9 @@ def run() -> int:
 
     failures += _check_responses()
     failures += _check_resolve_app()
+    failures += _check_gtk_launch_verifikasi()
 
-    total = len(INTENT_CASES) + len(SHUTDOWN_CASES) + 1 + 7
+    total = len(INTENT_CASES) + len(SHUTDOWN_CASES) + 1 + 7 + 2
     print(f"\n{total - failures}/{total} lolos")
     return 1 if failures else 0
 

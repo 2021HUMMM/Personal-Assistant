@@ -98,6 +98,8 @@ WEB_ALIASES = {
     "kalender": "https://calendar.google.com",
     "calendar": "https://calendar.google.com",
     "github": "https://github.com",
+    "chatgpt": "https://chatgpt.com",
+    "chat gpt": "https://chatgpt.com",
 }
 
 # Kata kerja pembuka. Yang tersisa setelah kata ini dianggap nama aplikasi.
@@ -222,15 +224,45 @@ def open_app(ctx, spoken_name: str) -> str:
     # jaring pengaman terakhir - aplikasi.cari() sudah membaca .desktop
     # secara langsung, jadi jarang sampai ke sini kecuali file-nya di luar
     # folder yang kita telusuri.
+    #
+    # gtk-launch keluar HAMPIR SEKETIKA (~0,05-0,1 detik) baik berhasil
+    # maupun gagal - exit code 0 kalau .desktop ketemu & diluncurkan, 2
+    # kalau tidak ("no such application"). Makanya diverifikasi SINKRON di
+    # sini, bukan fire-and-forget kayak _luncurkan() biasa - kejadian nyata:
+    # "buka chatgpt" dijawab "Oke" padahal gtk-launch diam-diam gagal (exit
+    # 2), dan karena open_app() mengembalikan respons "berhasil", jalur ini
+    # tidak PERNAH dianggap gagal - LLM (yang punya tool buka_website, bisa
+    # buka alamat apa pun) tidak pernah kepanggil sama sekali.
     if len(command) == 1 and shutil.which("gtk-launch"):
-        _luncurkan(["gtk-launch", command[0]])
-        return responses.pick("membuka", app=label)
+        if _gtk_launch_terverifikasi(command[0]):
+            return responses.pick("membuka", app=label)
+        print(f"[hint] gtk-launch tidak menemukan {command[0]!r}.")
+        return None
 
     # Tidak ketemu. Kembalikan None, bukan pesan error - biar pemanggil yang
     # memutuskan. Kalau LLM aktif, permintaan seperti "buka yang buat edit foto"
     # lebih baik diserahkan ke sana daripada dijawab "nggak nemu".
     print(f"[hint] {command!r} tidak ada di PATH dan tidak punya .desktop.")
     return None
+
+
+def _gtk_launch_terverifikasi(desktop_id: str) -> bool:
+    """
+    Jalankan `gtk-launch <desktop_id>` SINKRON (tunggu sampai selesai) lewat
+    systemd-run --scope yang sama seperti _luncurkan() - tetap lepas dari
+    cgroup Jarvis, tapi kali ini exit code-nya ditunggu dan dicek, bukan
+    fire-and-forget. Aman menunggu karena gtk-launch sendiri cuma memicu
+    peluncuran lalu langsung keluar (~0,1 detik), tidak menunggu aplikasi
+    yang dibukanya benar-benar siap.
+    """
+    perintah = (["systemd-run", "--user", "--scope", "--collect", "--",
+                 "gtk-launch", desktop_id] if shutil.which("systemd-run")
+                else ["gtk-launch", desktop_id])
+    try:
+        hasil = subprocess.run(perintah, capture_output=True, timeout=5)
+    except (subprocess.TimeoutExpired, OSError):
+        return False
+    return hasil.returncode == 0
 
 
 def _luncurkan(command):
