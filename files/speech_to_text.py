@@ -6,6 +6,10 @@ bahasa dikunci ke "id" (bahasa matriks), dan decoder dibiaskan dengan
 initial_prompt berisi kosakata perintah kita.
 """
 
+import ctypes
+import glob
+import os
+
 import numpy as np
 
 import config
@@ -13,10 +17,47 @@ import config
 _model = None
 
 
+def _preload_lib_cuda():
+    """
+    ctranslate2 (dipakai faster-whisper) butuh libcublas/libcudnn tapi TIDAK
+    membawanya sendiri - beda dari torch (dipakai Chatterbox) yang otomatis
+    membawa itu semua - dan sistem ini juga tidak punya cuBLAS di jalur
+    linker bawaan. Kejadian nyata: transkripsi audio DIAM/nyaris-diam
+    "sukses" (VAD men-skip GPU sama sekali di kasus itu), tapi audio yang
+    beneran ada suara memicu forward pass GPU dan meledak "libcublas.so.12
+    is not found".
+
+    Set LD_LIBRARY_PATH dari dalam Python TIDAK CUKUP - sudah dicoba dan
+    terbukti tidak berpengaruh, karena glibc mengunci daftar jalur pencarian
+    dlopen-nya di awal proses, bukan baca ulang os.environ tiap dlopen.
+    Yang benar-benar jalan: muat file .so-nya LANGSUNG lewat ctypes SEBELUM
+    ctranslate2 sempat dlopen sendiri - begitu sebuah .so sudah ada di
+    memori proses, dlopen(nama_yang_sama) berikutnya oleh library lain
+    (ctranslate2) otomatis nemu yang sudah dimuat itu, apa pun jalur
+    pencariannya.
+
+    Paket pip nvidia-cublas-cu12 & nvidia-cudnn-cu12 (./venv/bin/pip
+    install) menaruh .so-nya di dalam venv sendiri.
+    """
+    if config.WHISPER_DEVICE != "cuda":
+        return
+    base = os.path.join(os.path.dirname(__file__), "venv", "lib")
+    # Urutan penting: cuda_nvrtc dan cublas duluan, cudnn belakangan (cudnn
+    # butuh simbol dari cublas yang sudah residen).
+    for sub in ("cuda_nvrtc", "cublas", "cudnn"):
+        for so in sorted(glob.glob(os.path.join(base, "python3.*", "site-packages",
+                                                  "nvidia", sub, "lib", "*.so*"))):
+            try:
+                ctypes.CDLL(so, mode=ctypes.RTLD_GLOBAL)
+            except OSError as e:
+                print(f"[stt] peringatan: gagal preload {so}: {e}")
+
+
 def load():
     """Muat model di awal supaya perintah pertama tidak kena jeda kejut."""
     global _model
     if _model is None:
+        _preload_lib_cuda()
         from faster_whisper import WhisperModel
 
         if config.WHISPER_MODEL_SIZE.endswith(".en"):

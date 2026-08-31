@@ -123,6 +123,24 @@ def cek_model():
                 lapor(WARN, "whisper GPU", "ada GPU tapi masih pakai CPU (~0,75 detik terbuang)")
             except (FileNotFoundError, subprocess.TimeoutExpired):
                 pass
+        elif config.WHISPER_DEVICE == "cuda":
+            # ctranslate2 (faster-whisper) butuh libcublas/libcudnn sendiri,
+            # tidak dibawa otomatis kayak torch. Kejadian nyata: model
+            # kelihatan "berhasil" dimuat (bobotnya kepindah ke GPU), tapi
+            # baru meledak "libcublas.so.12 is not found" pas transkripsi
+            # audio yang beneran ada suara (audio nyaris hening lolos dari
+            # cek ini karena VAD men-skip forward pass GPU-nya sama sekali).
+            import glob
+            base = os.path.join(os.path.dirname(__file__), "venv", "lib")
+            ada_cublas = glob.glob(os.path.join(base, "python3.*", "site-packages",
+                                                  "nvidia", "cublas", "lib", "libcublas.so*"))
+            if ada_cublas:
+                lapor(OK, "whisper cuBLAS", "paket nvidia-cublas-cu12 terpasang di venv")
+            else:
+                lapor(BAD, "whisper cuBLAS",
+                      "belum ada - transkripsi GPU akan CRASH pas ada suara beneran "
+                      "(bukan cuma diam). Jalankan: "
+                      "./venv/bin/pip install nvidia-cublas-cu12 nvidia-cudnn-cu12")
     lapor(OK, "wake word", f"{config.WAKE_WORD_MODEL} via {config.WAKE_WORD_BACKEND}")
 
 
