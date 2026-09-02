@@ -13,8 +13,8 @@ tool ini dipakai dan apa isi argumennya.
 import shlex
 import subprocess
 
-import commands
-import config
+from jarvis import commands
+from jarvis import config
 
 # Perintah shell yang boleh jalan tanpa konfirmasi: hanya yang MEMBACA.
 # Daftar putih, bukan daftar hitam - menyebut apa yang boleh selalu lebih aman

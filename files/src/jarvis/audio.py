@@ -12,7 +12,7 @@ from collections import deque
 import numpy as np
 import sounddevice as sd
 
-import config
+from jarvis import config
 
 FRAME_SIZE = int(config.SAMPLE_RATE * config.FRAME_MS / 1000)
 _PREROLL_FRAMES = max(1, int(config.PREROLL_MS / config.FRAME_MS))

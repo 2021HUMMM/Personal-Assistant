@@ -19,10 +19,10 @@ import subprocess
 import threading
 import time
 
-import aplikasi
+from jarvis import aplikasi
 
-import config
-import responses
+from jarvis import config
+from jarvis import responses
 
 # Nama yang kamu ucapkan -> perintah yang benar-benar dijalankan.
 # Kunci boleh lebih dari satu untuk satu aplikasi; semuanya ikut dicocokkan fuzzy.
@@ -67,6 +67,8 @@ PROJECT_ALIASES = {
     # folder induknya.
     "project jarvis": os.path.expanduser("~/Documents/jarvis/files"),
     "jarvis": os.path.expanduser("~/Documents/jarvis/files"),
+    "putusan pajak": "/home/hummm/SynologyDrive/Documents/Personal Project/PutusanPajak",
+    "project putusan pajak": "/home/hummm/SynologyDrive/Documents/Personal Project/PutusanPajak",
 }
 PROJECT_EDITOR = "code"  # binary yang dipakai membuka semua PROJECT_ALIASES
 # Tanpa -n, `code <folder>` bisa MEMAKAI ULANG jendela yang sedang aktif,

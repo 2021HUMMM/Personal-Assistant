@@ -30,7 +30,7 @@ import os
 import re
 from datetime import datetime
 
-import config
+from jarvis import config
 
 # Baris metadata "- Session ID: <uuid>" di kepala berkas. Dipisah dari baris
 # metadata lain (Mulai/Selesai/Model) karena cuma ini yang perlu di-parse

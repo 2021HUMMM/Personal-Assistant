@@ -12,7 +12,7 @@ import os
 
 import numpy as np
 
-import config
+from jarvis import config
 
 _model = None
 
@@ -41,7 +41,7 @@ def _preload_lib_cuda():
     """
     if config.WHISPER_DEVICE != "cuda":
         return
-    base = os.path.join(os.path.dirname(__file__), "venv", "lib")
+    base = os.path.join(config._JARVIS_DIR, "venv", "lib")
     # Urutan penting: cuda_nvrtc dan cublas duluan, cudnn belakangan (cudnn
     # butuh simbol dari cublas yang sudah residen).
     for sub in ("cuda_nvrtc", "cublas", "cudnn"):

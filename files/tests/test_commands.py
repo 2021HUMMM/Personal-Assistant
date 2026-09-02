@@ -9,8 +9,8 @@ berarti kerjaan yang belum tersimpan hilang.
 
 import time
 
-import commands
-import responses
+from jarvis import commands
+from jarvis import responses
 
 INTENT_CASES = [
     ("Buka Firefox",              "open_app", "firefox"),

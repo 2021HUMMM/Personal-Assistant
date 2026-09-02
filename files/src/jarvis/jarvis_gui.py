@@ -14,7 +14,7 @@ baru atau menyambung salah satu yang sudah tersimpan.
 
 Auto-spawn saat login: lewat entri XDG autostart. Pasang semuanya (autostart
 + shortcut aplikasi + shortcut Desktop) dengan:
-    ./pasang-gui.sh
+    ./scripts/pasang-gui.sh
 
 Menutup jendela ini TIDAK mematikan Jarvis - dua hal yang independen. Buka
 lagi lewat shortcut yang sama kapan saja.
@@ -29,9 +29,15 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib, Gtk
 
-_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, _DIR)
-import riwayat as riwayat_mod  # noqa: E402  (butuh sys.path di atas dulu)
+# Jalan lewat python3 SISTEM (lihat docstring atas) - paket `jarvis` tidak
+# ter-install di situ (cuma ter-install lewat pip -e . di venv/). "src/"
+# (satu tingkat di atas file ini) ditaruh di sys.path supaya `jarvis` bisa
+# diimpor sebagai paket biasa tanpa perlu di-install - riwayat.py sendiri
+# (dipakai juga oleh main.py lewat venv) memakai `from jarvis import config`,
+# jadi harus lewat "jarvis.riwayat", bukan "riwayat" polos.
+_SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _SRC_DIR)
+from jarvis import riwayat as riwayat_mod  # noqa: E402  (butuh sys.path di atas dulu)
 
 _RESUME_MARKER = os.path.expanduser("~/.jarvis/resume_target")
 

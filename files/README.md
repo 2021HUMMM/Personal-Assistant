@@ -144,7 +144,7 @@ kasih jendela kecil buat itu, plus tempat memilih mau mulai **percakapan
 baru** atau **melanjutkan** salah satu yang sudah tersimpan.
 
 ```bash
-./pasang-gui.sh
+./scripts/pasang-gui.sh
 ```
 
 Ini memasang tiga hal:
@@ -256,10 +256,10 @@ sudo apt install python3-pip python3-venv
 cd files
 python3 -m venv venv
 source venv/bin/activate
-./install.sh
+./scripts/install.sh
 ```
 
-**Pakai `./install.sh`, bukan `pip install -r requirements.txt` langsung.**
+**Pakai `./scripts/install.sh`, bukan `pip install -r requirements.txt` langsung.**
 Metadata `openwakeword` mewajibkan `tflite-runtime`, sementara `tflite-runtime`
 tidak merilis wheel untuk Python 3.12 ke atas — `pip` akan berhenti dengan
 `ResolutionImpossible`. Kita memakai backend ONNX openWakeWord, jadi tflite
@@ -287,8 +287,8 @@ dua-duanya mengucapkan kalimat yang sama. Tradeoff-nya latensi: ~0,6-1,4 detik
 per ucapan (VRAM ~3,9 GB), dibanding Piper yang ~0,03-0,07 detik.
 
 ```bash
-./install-chatterbox.sh      # ~11GB unduhan (venv 6,3GB + model 5GB), beberapa menit
-python cek.py                # pastikan terdeteksi
+./scripts/install-chatterbox.sh      # ~11GB unduhan (venv 6,3GB + model 5GB), beberapa menit
+python -m jarvis.cek                # pastikan terdeteksi
 ```
 
 Terpasang di **venv terpisah** (`venv-chatterbox/`) — `chatterbox-tts` butuh
@@ -333,8 +333,8 @@ memastikan Jarvis selalu bisa bicara.
 ## 4. Jalankan
 
 ```bash
-python cek.py      # periksa semuanya dulu
-python main.py
+python -m jarvis.cek      # periksa semuanya dulu
+python -m jarvis.main
 ```
 
 Ucapkan "Hey Jarvis", lalu perintahmu.
@@ -342,7 +342,7 @@ Ucapkan "Hey Jarvis", lalu perintahmu.
 ## 5. Nyala otomatis saat komputer nyala
 
 ```bash
-./pasang-layanan.sh
+./scripts/pasang-layanan.sh
 ```
 
 Memasang systemd user service yang nyala tiap kali kamu login. Butuh ~2 detik
@@ -353,10 +353,10 @@ systemctl --user status jarvis      # keadaannya
 journalctl --user -u jarvis -f      # log langsung — di sini muncul [kamu] ...
 systemctl --user restart jarvis     # setelah mengubah kode
 systemctl --user stop jarvis        # matikan sementara
-./pasang-layanan.sh copot           # copot sepenuhnya
+./scripts/pasang-layanan.sh copot           # copot sepenuhnya
 ```
 
-**Menjalankan `python main.py` manual selagi layanannya aktif dicegah otomatis**
+**Menjalankan `python -m jarvis.main` manual selagi layanannya aktif dicegah otomatis**
 lewat file lock (`~/.jarvis/jarvis.lock`) — instance kedua langsung ditolak
 dalam hitungan milidetik, sebelum sempat memuat model apa pun. Bukan cuma
 soal rebutan mic: dua-duanya bakal coba bicara lewat PipeWire, yang
@@ -393,7 +393,7 @@ Memakai CLI `claude` yang sudah login di mesinmu. Tidak perlu API key.
 
 ```bash
 claude --version      # pastikan sudah terpasang & login
-python try_text.py    # uji dengan mengetik, tanpa mic
+python -m jarvis.try_text    # uji dengan mengetik, tanpa mic
 ```
 
 Prosesnya dibiarkan hidup, tidak di-spawn tiap perintah — jadi riwayat
@@ -417,14 +417,14 @@ Default `haiku` — paling ringan terhadap jatah Pro-mu.
 Bisa juga lewat config atau environment:
 
 ```bash
-JV_CLAUDECODE_MODEL=sonnet python main.py
+JV_CLAUDECODE_MODEL=sonnet python -m jarvis.main
 ```
 
 ### Rute alternatif: `gemini` — API terpisah, kunci gratis
 
 ```bash
 echo 'export GEMINI_API_KEY="..."' >> ~/.bashrc   # https://aistudio.google.com/apikey
-JV_LLM_PROVIDER=gemini python cek_model.py        # cek nama model yang tersedia
+JV_LLM_PROVIDER=gemini python -m jarvis.cek_model        # cek nama model yang tersedia
 ```
 
 Latensinya lebih rendah, tapi dua hal perlu diketahui soal tier gratisnya:
@@ -462,7 +462,7 @@ tidak ada di komputer ini (berita, harga, fakta yang berubah). Ini **tidak**
 memberi akses network ke shell — keduanya jalan lewat infrastruktur Anthropic,
 bukan lewat mesin ini, jadi tidak bisa dipakai mengirim data keluar dari sini.
 
-`jarvis-do shell` memakai **daftar putih** di `SHELL_AMAN` ([tools.py](tools.py)):
+`jarvis-do shell` memakai **daftar putih** di `SHELL_AMAN` ([tools.py](src/jarvis/tools.py)):
 hanya perintah yang membaca (`ls`, `df`, `ps`, `cat`, …). Perintah dengan pipe,
 redirect, atau titik koma ditolak apa pun isinya. Menyebut apa yang boleh selalu
 lebih aman daripada menebak semua yang berbahaya.
@@ -472,11 +472,11 @@ menjelaskan bahwa dia hanya bisa membaca.
 
 ## Membuka aplikasi — semua yang terpasang, bukan cuma yang didaftarkan
 
-Urutan pencarian saat kamu bilang "buka X" ([commands.py](commands.py)):
+Urutan pencarian saat kamu bilang "buka X" ([commands.py](src/jarvis/commands.py)):
 
 1. **`APP_ALIASES`** — kurasi manual, untuk alias custom atau menimpa nama
    otomatis yang kurang pas.
-2. **[aplikasi.py](aplikasi.py)** — baca LANGSUNG dari sistem, dua sumber:
+2. **[aplikasi.py](src/jarvis/aplikasi.py)** — baca LANGSUNG dari sistem, dua sumber:
    - **Semua `.desktop` yang terpasang** (`/usr/share/applications`,
      `~/.local/share/applications`, Flatpak) — cara yang sama dipakai menu
      aplikasi GNOME sendiri.
@@ -509,7 +509,7 @@ APP_ALIASES = {
 
 ### Membuka folder proyek di editor
 
-`PROJECT_ALIASES` di [commands.py](commands.py) — beda dari `APP_ALIASES`
+`PROJECT_ALIASES` di [commands.py](src/jarvis/commands.py) — beda dari `APP_ALIASES`
 karena hasilnya butuh **argumen** (path folder), bukan cuma nama binary:
 
 ```python
@@ -529,7 +529,7 @@ workspace berbeda.
 
 ### Membuka website
 
-`WEB_ALIASES` di [commands.py](commands.py) — untuk situs yang bukan
+`WEB_ALIASES` di [commands.py](src/jarvis/commands.py) — untuk situs yang bukan
 aplikasi terpasang ("buka youtube", "buka email"), jadi tidak akan pernah
 ketemu lewat pencarian aplikasi biasa:
 
@@ -544,7 +544,7 @@ WEB_ALIASES = {
 
 Dibuka lewat `xdg-open` (browser default sistem). Untuk situs di luar
 daftar ini, LLM punya tool `buka_website(url)` sendiri (lihat
-[tools.py](tools.py)) yang bisa buka alamat APA PUN yang kamu sebut, bukan
+[tools.py](src/jarvis/tools.py)) yang bisa buka alamat APA PUN yang kamu sebut, bukan
 cuma yang dikurasi.
 
 **Soal kata "jarvis" sebagai isi kalimat, bukan sapaan** — ini butuh
@@ -555,7 +555,7 @@ cuma membuang "jarvis" kalau posisinya di **awal** kalimat (posisi sapaan),
 bukan di tengah/ekor. Frasa perpisahan seperti "sampai jumpa jarvis" tetap
 dikenali lewat pengecekan terpisah yang secara lokal melepas "jarvis" di
 ekor — beda dari "buka project jarvis", di situ "jarvis" memang isi/argumen,
-bukan sapaan. Diuji di `test_commands.py`.
+bukan sapaan. Diuji di `tests/test_commands.py`.
 
 ### Aplikasi yang dibuka tidak ikut mati kalau Jarvis restart
 
@@ -580,11 +580,11 @@ lepas total dari cgroup Jarvis. Sudah diverifikasi langsung: luncurkan
 proses lewat `commands._luncurkan()`, matikan `jarvis.service`, proses
 tetap hidup.
 
-Cek berapa banyak yang berhasil terindeks: `python cek.py`.
+Cek berapa banyak yang berhasil terindeks: `python -m jarvis.cek`.
 
 ## Mengubah gaya bicara
 
-Semua kalimat yang diucapkan ada di [responses.py](responses.py), terpisah dari
+Semua kalimat yang diucapkan ada di [responses.py](src/jarvis/responses.py), terpisah dari
 logikanya. Tiap situasi punya beberapa varian, diambil acak, dan tidak pernah
 mengulang varian yang barusan dipakai — mengucapkan kalimat yang persis sama
 setiap kali itu yang paling terdengar seperti bot.
@@ -599,7 +599,7 @@ Menambah varian cukup menambah string ke daftarnya:
 ],
 ```
 
-`{app}` dan `{detik}` diisi otomatis. `python test_commands.py` akan menangkap
+`{app}` dan `{detik}` diisi otomatis. `python tests/test_commands.py` akan menangkap
 kalau varian barumu memakai placeholder yang tidak tersedia.
 
 **Kenapa bukan LLM lokal?** Sudah diuji dengan qwen3-vl:4b dan qwen2.5:14b lewat
@@ -623,12 +623,12 @@ Perintah shutdown juga hanya cocok kalau ada kata sasaran yang eksplisit
 pernah mematikan komputer.
 
 Ubah durasinya di `SHUTDOWN_CONFIRM_SECONDS` dan `SHUTDOWN_GRACE_SECONDS`
-dalam [config.py](config.py).
+dalam [config.py](src/jarvis/config.py).
 
 ## Uji tanpa mic
 
 ```bash
-python test_commands.py
+python tests/test_commands.py
 ```
 
 Menguji pencocokan maksud dan seluruh cabang alur shutdown. Jalankan setiap
@@ -643,7 +643,7 @@ kali menyentuh `commands.py`.
 | Whisper lambat | turunkan `WHISPER_MODEL_SIZE` ke `"base"` (akurasi bahasa Indonesia turun) |
 | Whisper salah dengar nama app | tambahkan nama itu ke `WHISPER_INITIAL_PROMPT` |
 | Wake word sering salah trigger | naikkan `WAKE_WORD_THRESHOLD` |
-| `ResolutionImpossible` saat install | pakai `./install.sh`, lihat bagian 2 |
+| `ResolutionImpossible` saat install | pakai `./scripts/install.sh`, lihat bagian 2 |
 
 `WHISPER_MODEL_SIZE` **tidak boleh** berakhiran `.en` — itu model khusus bahasa
 Inggris dan tidak bisa memahami bahasa Indonesia. Program menolak jalan kalau
@@ -651,25 +651,45 @@ disetel begitu.
 
 ## Struktur
 
+Paket Python asli (`src/jarvis/`) — `pip install -e .` mendaftarkannya
+supaya bisa diimpor sebagai `from jarvis import X` dari mana pun venv ini
+aktif, dan dijalankan lewat `python -m jarvis.<nama>`:
+
 ```
 files/
-├── main.py             # loop utama
-├── config.py           # semua setelan
-├── audio.py            # wake word + perekaman (satu stream berkelanjutan)
-├── speech_to_text.py   # faster-whisper, multilingual
-├── commands.py         # pencocokan maksud + handler — file yang paling sering diedit
-├── responses.py        # semua kalimat yang diucapkan Jarvis
-├── bunyi.py            # efek suara: giliranmu, menunggu, jeda, pamit
-├── riwayat.py          # catatan percakapan -> percakapan/*.md, plus parse balik
-├── jarvis_gui.py       # jendela: nyala/mati Jarvis + pilih percakapan (GTK)
-├── pasang-gui.sh       # pasang autostart + shortcut menu + shortcut Desktop
-├── otak.py             # lapis LLM, provider bisa ditukar
-├── tools.py            # tool + daftar putih shell
-├── jarvis-do           # satu-satunya pintu aksi untuk LLM
-├── text_to_speech.py   # chatterbox / piper / espeak, mendukung interupsi
-├── chatterbox_server.py # proses TTS terpisah (dipanggil via venv-chatterbox)
-├── install-chatterbox.sh # pasang suara Chatterbox (opsional, butuh GPU)
-├── test_commands.py    # uji pencocokan maksud, tanpa mic
-├── test_riwayat.py     # uji kapan disimpan + parsing + alur resume, tanpa mic
-└── test_audio.py       # uji logika perekaman & interupsi, tanpa mic
+├── pyproject.toml          # daftarin paket `jarvis` (src layout, editable install)
+├── requirements.txt        # dependensi - pasang lewat scripts/install.sh, BUKAN langsung
+├── src/jarvis/
+│   ├── main.py              # loop utama
+│   ├── config.py            # semua setelan
+│   ├── audio.py             # wake word + perekaman (satu stream berkelanjutan)
+│   ├── speech_to_text.py    # faster-whisper, multilingual
+│   ├── commands.py          # pencocokan maksud + handler — file yang paling sering diedit
+│   ├── responses.py         # semua kalimat yang diucapkan Jarvis
+│   ├── bunyi.py             # efek suara: giliranmu, menunggu, jeda, pamit
+│   ├── riwayat.py           # catatan percakapan -> percakapan/*.md, plus parse balik
+│   ├── jarvis_gui.py        # jendela: nyala/mati Jarvis + pilih percakapan (GTK, python3 SISTEM)
+│   ├── otak.py              # lapis LLM, provider bisa ditukar
+│   ├── tools.py             # tool + daftar putih shell (provider gemini)
+│   ├── jarvis_do.py         # satu-satunya pintu aksi untuk LLM (provider claudecode)
+│   ├── text_to_speech.py    # chatterbox / piper / espeak, mendukung interupsi
+│   ├── chatterbox_server.py # proses TTS terpisah (dipanggil via venv-chatterbox)
+│   ├── aplikasi.py          # penemuan aplikasi sistem-lebar (.desktop + Steam)
+│   ├── cek.py                # python -m jarvis.cek - pemeriksaan sebelum jalan
+│   ├── miccheck.py           # python -m jarvis.miccheck - kalibrasi SILENCE_THRESHOLD
+│   ├── cek_model.py          # python -m jarvis.cek_model - lihat model Gemini tersedia
+│   └── try_text.py           # python -m jarvis.try_text - uji lewat ketik, tanpa mic
+├── tests/
+│   ├── test_commands.py    # uji pencocokan maksud, tanpa mic
+│   ├── test_riwayat.py     # uji kapan disimpan + parsing + alur resume, tanpa mic
+│   └── test_audio.py       # uji logika perekaman & interupsi, tanpa mic
+├── scripts/
+│   ├── install.sh              # pasang dependensi + editable-install paket jarvis
+│   ├── install-chatterbox.sh   # pasang suara Chatterbox (opsional, butuh GPU)
+│   ├── pasang-layanan.sh       # pasang systemd --user service
+│   ├── pasang-gui.sh           # pasang autostart + shortcut menu + shortcut Desktop
+│   └── jarvis-do               # shim: satu-satunya perintah yang boleh dijalankan LLM
+└── systemd/
+    ├── jarvis.service.template # template unit systemd --user
+    └── 99-jarvis-inotify.conf  # contoh sysctl, naikkan limit inotify
 ```

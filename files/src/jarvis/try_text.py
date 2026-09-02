@@ -5,17 +5,17 @@ Berguna untuk memverifikasi pencocokan maksud dan aksi yang benar-benar
 dijalankan (aplikasi kebuka atau tidak) sebelum berurusan dengan mic,
 whisper, dan wake word. Tidak butuh dependensi apa pun.
 
-    python try_text.py            # aman: shutdown hanya disimulasikan
-    python try_text.py --armed    # shutdown BENERAN mematikan komputer
+    python -m jarvis.try_text            # aman: shutdown hanya disimulasikan
+    python -m jarvis.try_text --armed    # shutdown BENERAN mematikan komputer
 
 Ketik 'keluar' untuk berhenti.
 """
 
 import sys
 
-import commands
-import config
-import otak as otak_mod
+from jarvis import commands
+from jarvis import config
+from jarvis import otak as otak_mod
 
 ARMED = "--armed" in sys.argv
 

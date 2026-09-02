@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jarvis"
+version = "0.1.0"
+description = "Asisten suara lokal untuk Linux (Ubuntu/GNOME)"
+requires-python = ">=3.10"
+
+# Dependensi TIDAK didaftarkan di sini dengan sengaja - lihat requirements.txt
+# dan scripts/install.sh. openwakeword butuh --no-deps (metadata-nya mewajibkan
+# tflite-runtime, yang tidak punya wheel untuk Python 3.12+). `pip install -e .`
+# di sini HANYA mendaftarkan paket `jarvis` itu sendiri supaya modulnya bisa
+# diimpor dari mana pun venv ini aktif - jalankan setelah install.sh, bukan
+# gantinya.
+
+[tool.setuptools.packages.find]
+where = ["src"]

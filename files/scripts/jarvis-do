@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Shim supaya Claude Code bisa memanggil `jarvis-do` tanpa tahu soal venv.
+# ROOT proyek = satu tingkat di atas scripts/ (tempat skrip ini berada).
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec "$ROOT/venv/bin/python" -m jarvis.jarvis_do "$@"

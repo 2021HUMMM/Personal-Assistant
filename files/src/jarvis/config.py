@@ -7,9 +7,12 @@ Asisten ini 100% offline - tidak ada satu pun panggilan network.
 import os
 import sys
 
-# Folder tempat berkas ini berada. Dipakai banyak setelan di bawah, jadi
-# didefinisikan paling awal.
-_JARVIS_DIR = os.path.dirname(os.path.abspath(__file__))
+# Folder ROOT proyek (yang isinya venv/, venv-chatterbox/, models/,
+# percakapan/) - BUKAN folder berkas ini sendiri. Sejak reorganisasi ke
+# struktur src/jarvis/, config.py ada di src/jarvis/config.py, jadi perlu
+# naik TIGA tingkat: src/jarvis/ -> src/ -> root. Dipakai banyak setelan di
+# bawah, jadi didefinisikan paling awal.
+_JARVIS_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # --- Perilaku ---
 # Ucapkan sapaan saat Jarvis selesai memuat? Matikan kalau dia dijalankan
@@ -98,7 +101,7 @@ PIPER_MODEL_PATH = os.environ.get(
 )
 # piper terpasang di venv/bin, yang hanya ada di PATH kalau venv diaktifkan.
 # Cari di sebelah interpreter yang sedang jalan supaya tetap ketemu meski
-# dijalankan lewat path lengkap (mis. ./venv/bin/python main.py).
+# dijalankan lewat path lengkap (mis. ./venv/bin/python -m jarvis.main).
 _piper_beside_python = os.path.join(os.path.dirname(sys.executable), "piper")
 PIPER_BINARY = os.environ.get("JV_PIPER_BIN") or (
     _piper_beside_python if os.path.exists(_piper_beside_python) else "piper"
@@ -181,7 +184,8 @@ LLM_PROVIDER = os.environ.get("JV_LLM_PROVIDER", "claudecode")
 CLAUDECODE_MODEL = os.environ.get("JV_CLAUDECODE_MODEL", "haiku")
 
 # Skrip satu-satunya yang boleh dijalankan Claude Code. Bukan Bash penuh.
-JARVIS_DO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "jarvis-do")
+# Ada di scripts/, bukan di sebelah config.py ini - lihat _JARVIS_DIR di atas.
+JARVIS_DO_PATH = os.path.join(_JARVIS_DIR, "scripts", "jarvis-do")
 
 LLM_TIMEOUT = 45              # detik, batas menunggu jawaban
 

@@ -20,10 +20,10 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-import aplikasi
-import commands
-import config
-import tools
+from jarvis import aplikasi
+from jarvis import commands
+from jarvis import config
+from jarvis import tools
 
 
 class _NullCtx:

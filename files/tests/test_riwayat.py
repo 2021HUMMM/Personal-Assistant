@@ -21,10 +21,10 @@ import os
 import shutil
 import tempfile
 
-import bunyi
-import main
-import riwayat as riwayat_mod
-import speech_to_text
+from jarvis import bunyi
+from jarvis import main
+from jarvis import riwayat as riwayat_mod
+from jarvis import speech_to_text
 
 
 class _ListenerPalsu:

@@ -1,7 +1,7 @@
 """
 Periksa semua yang dibutuhkan Jarvis sebelum dijalankan.
 
-    python cek.py
+    python -m jarvis.cek
 
 Menandai apa yang siap, apa yang kurang, dan apa yang perlu disetel.
 """
@@ -11,7 +11,7 @@ import shutil
 import subprocess
 import sys
 
-import config
+from jarvis import config
 
 OK, WARN, BAD = "  ok  ", " perlu", " KURANG"
 _gagal = 0
@@ -36,7 +36,7 @@ def cek_paket():
             __import__(modul)
             lapor(OK, nama)
         except ImportError:
-            lapor(BAD, nama, "jalankan ./install.sh")
+            lapor(BAD, nama, "jalankan ./scripts/install.sh")
 
 
 def cek_audio():
@@ -61,10 +61,10 @@ def cek_audio():
         lapor(WARN, "suara Chatterbox (utama)", "dimatikan (JV_CHATTERBOX=0)")
     elif not os.path.exists(config.CHATTERBOX_PYTHON):
         lapor(WARN, "suara Chatterbox (utama)",
-              "belum terpasang — ./install-chatterbox.sh, jatuh ke Piper untuk sekarang")
+              "belum terpasang — ./scripts/install-chatterbox.sh, jatuh ke Piper untuk sekarang")
     elif not os.path.isdir(config.CHATTERBOX_MODEL_DIR):
         lapor(WARN, "suara Chatterbox (utama)",
-              "venv ada tapi model belum diunduh — ./install-chatterbox.sh")
+              "venv ada tapi model belum diunduh — ./scripts/install-chatterbox.sh")
     else:
         try:
             subprocess.run(["nvidia-smi"], capture_output=True, timeout=5, check=True)
@@ -100,7 +100,7 @@ def cek_isolasi_proses():
 def cek_aplikasi():
     print("\n--- Penemuan aplikasi ---")
     import time
-    import aplikasi
+    from jarvis import aplikasi
     t0 = time.time()
     n_desktop, n_steam = aplikasi.jumlah_terindeks()
     detik = time.time() - t0
@@ -131,7 +131,7 @@ def cek_model():
             # audio yang beneran ada suara (audio nyaris hening lolos dari
             # cek ini karena VAD men-skip forward pass GPU-nya sama sekali).
             import glob
-            base = os.path.join(os.path.dirname(__file__), "venv", "lib")
+            base = os.path.join(config._JARVIS_DIR, "venv", "lib")
             ada_cublas = glob.glob(os.path.join(base, "python3.*", "site-packages",
                                                   "nvidia", "cublas", "lib", "libcublas.so*"))
             if ada_cublas:
@@ -179,10 +179,10 @@ def cek_layanan():
         lapor(OK, "nyala saat login", f"status sekarang: {aktif}")
         if aktif == "active":
             lapor(OK, "instance ganda",
-                  "dicegah otomatis (file lock) - aman coba `python main.py` manual, "
+                  "dicegah otomatis (file lock) - aman coba `python -m jarvis.main` manual, "
                   "akan ditolak cepat kalau service masih hidup")
     else:
-        lapor(WARN, "nyala saat login", "belum dipasang — ./pasang-layanan.sh")
+        lapor(WARN, "nyala saat login", "belum dipasang — ./scripts/pasang-layanan.sh")
 
 
 def cek_riwayat():
@@ -218,14 +218,14 @@ def cek_gui():
     if os.path.exists(autostart):
         lapor(OK, "auto-nyala saat login", "terpasang")
     else:
-        lapor(WARN, "auto-nyala saat login", "belum dipasang — ./pasang-gui.sh")
+        lapor(WARN, "auto-nyala saat login", "belum dipasang — ./scripts/pasang-gui.sh")
 
 
 def cek_setelan():
     print("\n--- Setelan yang perlu disesuaikan ---")
     if config.SILENCE_THRESHOLD == 500:
         lapor(WARN, "SILENCE_THRESHOLD",
-              "masih nilai bawaan — jalankan `python miccheck.py` dulu")
+              "masih nilai bawaan — jalankan `python -m jarvis.miccheck` dulu")
     else:
         lapor(OK, "SILENCE_THRESHOLD", str(config.SILENCE_THRESHOLD))
 
@@ -253,12 +253,12 @@ def main():
 
     print()
     if _gagal:
-        print(f"{_gagal} hal KURANG — perbaiki dulu sebelum `python main.py`")
+        print(f"{_gagal} hal KURANG — perbaiki dulu sebelum `python -m jarvis.main`")
         return 1
     if _warn:
         print(f"Siap jalan, tapi {_warn} hal sebaiknya dibereskan dulu.")
     else:
-        print("Semua siap. Jalankan: python main.py")
+        print("Semua siap. Jalankan: python -m jarvis.main")
     return 0
 
 

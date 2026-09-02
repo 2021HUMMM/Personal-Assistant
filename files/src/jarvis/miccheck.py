@@ -1,7 +1,7 @@
 """
 Cek mic dan cari nilai SILENCE_THRESHOLD yang pas untuk perangkatmu.
 
-    python miccheck.py
+    python -m jarvis.miccheck
 
 Butuh: pip install sounddevice numpy
 
@@ -14,7 +14,7 @@ import time
 import numpy as np
 import sounddevice as sd
 
-import config
+from jarvis import config
 
 FRAME = int(config.SAMPLE_RATE * config.FRAME_MS / 1000)
 

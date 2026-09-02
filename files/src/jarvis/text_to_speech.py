@@ -31,7 +31,7 @@ import threading
 import time
 import wave
 
-import config
+from jarvis import config
 
 _voice = None
 _syn_config = None
@@ -102,10 +102,17 @@ def _cb_pastikan_siap() -> bool:
     print("[tts] menyalakan chatterbox (GPU, muat model + siapkan suara)...")
     t0 = time.time()
     direktori = os.path.dirname(os.path.abspath(__file__))
+    # chatterbox_server.py punya fallback path MODEL_DIR relatif ke lokasinya
+    # SENDIRI (dipakai kalau JV_CHATTERBOX_MODEL_DIR tidak diset) - itu cuma
+    # kebetulan benar selama dia ada di folder yang sama dengan models/.
+    # Sejak dipindah ke src/jarvis/ (models/ tetap di root proyek), fallback
+    # itu tidak lagi benar - jadi diteruskan eksplisit di sini, bukan
+    # dibiarkan tebak sendiri.
+    env = dict(os.environ, JV_CHATTERBOX_MODEL_DIR=config.CHATTERBOX_MODEL_DIR)
     _cb_proc = subprocess.Popen(
         [config.CHATTERBOX_PYTHON, "chatterbox_server.py"],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-        text=True, bufsize=1, cwd=direktori,
+        text=True, bufsize=1, cwd=direktori, env=env,
     )
     _cb_antrian = queue.Queue()
     threading.Thread(target=_cb_pembaca, args=(_cb_proc, _cb_antrian), daemon=True).start()

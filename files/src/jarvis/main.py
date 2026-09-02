@@ -6,7 +6,7 @@ Sepenuhnya offline. Tidak ada panggilan network sama sekali.
     wake word -> rekam perintah -> speech-to-text -> cocokkan maksud -> jalankan
 
 Jalankan:
-    python main.py
+    python -m jarvis.main
 """
 
 import atexit
@@ -16,15 +16,15 @@ import signal
 import sys
 import threading
 
-import audio
-import bunyi
-import commands
-import config
-import otak as otak_mod
-import responses
-import riwayat as riwayat_mod
-import speech_to_text
-import text_to_speech
+from jarvis import audio
+from jarvis import bunyi
+from jarvis import commands
+from jarvis import config
+from jarvis import otak as otak_mod
+from jarvis import responses
+from jarvis import riwayat as riwayat_mod
+from jarvis import speech_to_text
+from jarvis import text_to_speech
 
 _LOCK_PATH = os.path.expanduser("~/.jarvis/jarvis.lock")
 _lock_file = None  # dipegang terus selama proses hidup - simpan di variabel

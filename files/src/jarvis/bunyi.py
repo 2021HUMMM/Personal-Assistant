@@ -32,7 +32,7 @@ import wave
 
 import numpy as np
 
-import config
+from jarvis import config
 
 SR = 22050  # sample rate untuk file bunyi (bukan mic, ini output saja)
 

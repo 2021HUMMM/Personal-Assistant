@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Pasang Chatterbox TTS (neural, GPU) sebagai suara utama Jarvis.
 #
-#   ./install-chatterbox.sh
+#   ./scripts/install-chatterbox.sh
 #
 # Terpisah dari venv utama (venv/) karena chatterbox-tts butuh numpy<2.0,
 # yang bentrok dengan numpy yang dipakai openwakeword/faster-whisper di sana.
@@ -12,8 +12,9 @@
 # pip/huggingface_hub.
 set -euo pipefail
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$DIR"
+# ROOT proyek (venv-chatterbox/ dan models/ ada di sini, BUKAN di scripts/).
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
 
 echo "=== 1/4: membuat venv-chatterbox ==="
 python3 -m venv venv-chatterbox
@@ -45,6 +46,6 @@ curl -sL -o models/chatterbox-id/reference.wav \
     "https://huggingface.co/grandhigh/Chatterbox-TTS-Indonesian/resolve/main/example1.wav"
 
 echo
-echo "Selesai. Uji dengan:  python cek.py"
+echo "Selesai. Uji dengan:  venv/bin/python -m jarvis.cek"
 echo "Ganti suara referensi: taruh wav lain di models/chatterbox-id/reference.wav"
 echo "                       atau JV_CHATTERBOX_REFERENCE=/path/ke/suara.wav"

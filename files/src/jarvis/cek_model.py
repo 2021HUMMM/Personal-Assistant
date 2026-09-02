@@ -1,13 +1,13 @@
 """
 Lihat model Gemini apa saja yang tersedia di akunmu.
 
-    python cek_model.py
+    python -m jarvis.cek_model
 
 Nama model berubah-ubah, jadi jangan percaya nilai default di config.py -
 cek langsung ke akunmu, lalu setel JV_GEMINI_MODEL atau ubah config.
 """
 
-import config
+from jarvis import config
 
 
 def main():

@@ -17,8 +17,8 @@ import subprocess
 import threading
 import time
 
-import config
-import tools
+from jarvis import config
+from jarvis import tools
 
 
 class Percakapan:
@@ -241,15 +241,17 @@ class OtakClaudeCode(Otak):
                   f"melanjutkan sesi {self._resume_session_id[:8]}...")
         else:
             print(f"[otak] menyalakan claude ({self.model})...")
-        # Taruh direktori ini di depan PATH supaya `jarvis-do` bisa dipanggil
-        # dengan nama pendek - itu yang dicocokkan oleh --allowedTools.
-        direktori = os.path.dirname(os.path.abspath(__file__))
-        env = dict(os.environ, PATH=direktori + os.pathsep + os.environ.get("PATH", ""))
+        # Taruh direktori scripts/ (isi jarvis-do) di depan PATH supaya bisa
+        # dipanggil dengan nama pendek - itu yang dicocokkan oleh
+        # --allowedTools.
+        direktori_scripts = os.path.join(config._JARVIS_DIR, "scripts")
+        env = dict(os.environ,
+                   PATH=direktori_scripts + os.pathsep + os.environ.get("PATH", ""))
 
         self._proc = subprocess.Popen(
             perintah, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE, text=True, bufsize=1,
-            cwd=direktori, env=env,
+            cwd=config._JARVIS_DIR, env=env,
         )
         self._antrian = queue.Queue()
         threading.Thread(target=self._pembaca, args=(self._proc, self._antrian),

@@ -2,11 +2,13 @@
 # Pasang antarmuka Jarvis (jarvis_gui.py): auto-nyala saat login, shortcut di
 # menu aplikasi, dan shortcut di Desktop.
 #
-#   ./pasang-gui.sh          pasang
-#   ./pasang-gui.sh copot    copot semuanya
+#   ./scripts/pasang-gui.sh          pasang
+#   ./scripts/pasang-gui.sh copot    copot semuanya
 set -euo pipefail
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# jarvis_gui.py ada di src/jarvis/ - satu tingkat di atas scripts/ (tempat
+# skrip ini berada), lalu turun ke src/jarvis.
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../src/jarvis" && pwd)"
 AUTOSTART="$HOME/.config/autostart/jarvis-gui.desktop"
 APLIKASI="$HOME/.local/share/applications/jarvis-gui.desktop"
 DESKTOP_DIR="$(xdg-user-dir DESKTOP 2>/dev/null || echo "$HOME/Desktop")"
@@ -64,4 +66,4 @@ echo "  - Menu aplikasi         : $APLIKASI"
 [ -f "$DESKTOP_FILE" ] && echo "  - Shortcut Desktop      : $DESKTOP_FILE"
 echo
 echo "Coba sekarang:  python3 $DIR/jarvis_gui.py"
-echo "Copot semuanya: ./pasang-gui.sh copot"
+echo "Copot semuanya: ./scripts/pasang-gui.sh copot"

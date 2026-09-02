@@ -37,9 +37,14 @@ signal.signal(signal.SIGUSR1, signal.SIG_IGN)
 _protokol = os.fdopen(os.dup(1), "w", buffering=1)
 os.dup2(os.open(os.devnull, os.O_WRONLY), 1)
 
+# text_to_speech.py SELALU mengirim JV_CHATTERBOX_MODEL_DIR eksplisit - jalur
+# fallback di bawah cuma kepakai kalau file ini dijalankan manual langsung
+# (tanpa lewat text_to_speech.py). Root proyek = 3 tingkat di atas berkas ini
+# (src/jarvis/chatterbox_server.py -> src/jarvis -> src -> root), sama
+# seperti _JARVIS_DIR di config.py.
+_ROOT_FALLBACK = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 MODEL_DIR = os.environ.get("JV_CHATTERBOX_MODEL_DIR",
-                           os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                       "models", "chatterbox-id"))
+                           os.path.join(_ROOT_FALLBACK, "models", "chatterbox-id"))
 REFERENCE_WAV = os.environ.get("JV_CHATTERBOX_REFERENCE",
                                os.path.join(MODEL_DIR, "reference.wav"))
 DEVICE = os.environ.get("JV_CHATTERBOX_DEVICE", "cuda")

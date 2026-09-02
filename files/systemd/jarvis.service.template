@@ -23,7 +23,7 @@ WorkingDirectory=__DIR__
 # diam-diam". Timeout 30 detik supaya tidak nyangkut selamanya kalau memang
 # tidak ada sesi grafis (mis. dipanggil dari SSH murni).
 ExecStartPre=/usr/bin/timeout 30 /bin/sh -c 'until systemctl --user show-environment | grep -q "^DISPLAY="; do sleep 0.5; done'
-ExecStart=__PYTHON__ -u main.py
+ExecStart=__PYTHON__ -u -m jarvis.main
 # systemd user service tidak membaca ~/.bashrc, jadi PATH harus disebut sendiri.
 Environment=PATH=__PATH__
 Environment=PYTHONUNBUFFERED=1

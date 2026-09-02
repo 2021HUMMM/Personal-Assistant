@@ -12,8 +12,8 @@ from collections import deque
 
 import numpy as np
 
-import audio
-import config
+from jarvis import audio
+from jarvis import config
 
 
 def _listener_dari_rms(urutan_rms):
